@@ -1,6 +1,8 @@
 import socket
 import time
 import math
+from PIL import Image
+import numpy
 
 def text_to_bin(text):
     """Converts text to 7 rows of binary data, 1 represents a lit pixel"""
@@ -71,9 +73,12 @@ def blink_text(message, numberOfBlinks, showTime, hideTime = None):
     """Displays a blinking text"""
     if hideTime == None:
         hideTime = showTime
+
+    message = split_to_lines(message)
     for i in range(numberOfBlinks):
         print("Blink nr {} of {}".format(i + 1, numberOfBlinks))
-        static_text(message, 1)
+        display_on_line(message[0], 0, 0)
+        display_on_line(message[1], 1, 1)
         time.sleep(showTime)
         static_text('', 1)
         time.sleep(hideTime)
@@ -116,10 +121,13 @@ def split_to_lines(message):
     result.append(line)
     return result
 
-def display_on_line(message, row = 0, trans = 1):
+def display_on_line(message, row = 0, trans = 1, center = 1):
     global rowData
     message = message[:CHARSONROW]
-    rowData[row] = text_to_bin(message)
+    binData = text_to_bin(message)
+    if center == 1:
+        binData = center_bin(binData)
+    rowData[row] = binData
     gen_disp_data()
     if trans == 1:
         transmit()
@@ -135,11 +143,11 @@ def gen_disp_data():
     displayData = decarray_to_bytestream(bin_to_decarray(decArray))
     return displayData
 
-def display_all(message, sleepTime = 3):
+def display_all(message, sleepTime = 3, center = 1):
     message = split_to_lines(message)
     row = 0
     while message:
-        display_on_line(message.pop(0), row, row)
+        display_on_line(message.pop(0), row, row, center)
         if row:
             time.sleep(sleepTime)
         row = not row
@@ -147,7 +155,7 @@ def display_all(message, sleepTime = 3):
         display_on_line('', row, row)
         time.sleep(sleepTime)
 
-def scrolling_row(message, row = 0,  sleeptime = 0.1, delta = 1):
+def scroll_row(message, row = 0,  sleeptime = 0.1, delta = 1):
     """Displays a scrolling text on a specified row"""
     global rowData
     binData = text_to_bin(message)
@@ -160,6 +168,38 @@ def scrolling_row(message, row = 0,  sleeptime = 0.1, delta = 1):
         for i in range(len(binData)):
             binData[i] = binData[i][delta:]
         time.sleep(sleeptime)
+
+def center_bin(binData):
+    ## first strip of any padding from the data
+    done = 0
+    while not done: ## from the beginning
+        front = 1
+        back = 1
+        for i in range(len(binData)):
+            if not binData[1]:
+                front = back = 0
+            if front and  binData[i][0] == '1':
+                front = 0
+            if back  and  binData[i][-1] == '1':
+                back = 0
+        if front:
+            for i in range(len(binData)):
+                binData[i] = binData[i][1:]
+        if back:
+            for i in range(len(binData)):
+                binData[i] = binData[i][:-1]
+        else:
+            done = 1
+
+    ## now pad left and right untill we are done
+    while len(binData[0]) + 2 < LEDSONROW:
+        for i in range(len(binData)):
+            binData[i] = '0' + binData[i] + '0'
+    if len(binData[0]) < LEDSONROW:
+        for i in range(len(binData)):
+            binData[i] += '0'
+
+    return binData
 
 
 font = {' ':['00000', '00000', '00000', '00000', '00000', '00000', '00000']}
@@ -194,9 +234,30 @@ sock = socket.socket(socket.AF_INET, # Internet
 
 sleep = time.sleep
 
-display_on_line("#hashtag", 0)
-scrolling_row("Loremipsumdolorsitamet, consectetur adipiscing elit. Praesent non consectetur mi. Vestibulum nisl erat, pretium et augue quis, egestas laoreet odio. Phasellus lacinia magna orci, eu porttitor"
-        , 1, 0.05)
+## display_on_line("#hashtag", 0)
+
+def displayImage(path, row = 0):
+    size = (LEDSONLINE, LINES)
+    im = Image.open(path).convert("L")
+    im.resize(size, Image.ANTIALIAS)
+    arr = numpy.array(im)
+
+    binData = ['' for i in range(LINES)]
+    for line in range(LINES):
+        for pixel in arr[line]:
+            if pixel < 128:
+                binData[line] += '1'
+            else:
+                binData[line] += '0'
+    rowData[row] = binData
+    gen_disp_data()
+    transmit()
+
+displayImage("fig/test5.jpg", 0)
+time.sleep(5)
+
+display_all("Loremipsumdolorsitamet, consectetur adipiscing elit. Praesent non consectetur mi. Vestibulum nisl erat, pretium et augue quis, egestas laoreet odio. Phasellus lacinia magna orci, eu porttitor"
+        , 2)
 
 display_on_line('ping pong ping pong ping pong ping', 0, 0)
 display_on_line('balletje', 1)
@@ -204,9 +265,11 @@ display_on_line('balletje', 1)
 ##static_text('boe!')
 
 time.sleep(3)
-static_text('schrik?')
+clear_screen()
+display_on_line('schrik?')
 time.sleep(3)
-static_text('#hastag')
+display_on_line('#hashtag', 1)
 time.sleep(5)
 blink_text('Hallo, ik ben een flikkerlichtje', 10, 0.3, 0.2)
-scrolling_text('Ahoi, ik ben een heeele lange scrollende tekst, maar dan ook echt heeeel lang eh!', 0.05, 1)
+display_on_line('#hahstag', 1, 0)
+scroll_row('Ahoi, ik ben een heeele lange scrollende tekst, maar dan ook echt heeeel lang eh!', 0, 0.05)
