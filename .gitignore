@@ -1,4 +1,7 @@
-### swap files ###
+## key file ##
+twitter
+
+# swap files ###
 *.swp
 
 ### C stuff ###
