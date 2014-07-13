@@ -13,7 +13,7 @@ def text_to_bin(text):
             try: ## look up the letter in the fontlist
                 result[i] += font[letter][i] + '0' ## and add it to the string
             except KeyError: ## for an unkown symbol, insert '?'
-                result[i] += font[letter][i] + '0'
+                result[i] += font['?'][i] + '0'
             lenght += 1
     return result
 
@@ -51,9 +51,9 @@ def static_text(message, quiet = 0):
 def transmit(bytestream = None):
     """send a frame to the display driver"""
     if bytestream == None:
-        sock.sendto(displayData, (UDP_IP, UDP_PORT))
+        display.sendto(displayData, (DISP_IP, DISP_PORT))
     else:
-        sock.sendto(bytestream, (UDP_IP, UDP_PORT))
+        display.sendto(bytestream, (DISP_IP, DISP_PORT))
 
 
 def scrolling_text(message, sleeptime = 0.1, delta = 1):
@@ -201,41 +201,6 @@ def center_bin(binData):
 
     return binData
 
-
-font = {' ':['00000', '00000', '00000', '00000', '00000', '00000', '00000']}
-fontFile = open('ledFont', 'r')
-
-for line in fontFile:
-    line = line.strip()
-    line = line.split(' ')
-    font[line[0]] = line[1:][::-1]
-
-fontFile.close()
-
-## some constants
-UDP_IP = "10.23.5.143"
-UDP_PORT = 5000
-MESSAGE = "Hello, World!"
-CHARSONROW = 18
-CHARSONDISP = 36
-LEDSONLINE = 216
-LEDSONROW = LEDSONLINE/2
-BYTESONLINE = 27
-LINES = 7
-ROWS = 2
-BYTES = BYTESONLINE * LINES
-
-## global variables
-displayData = [0 for i in range(BYTES)] ## bytestream for the display
-rowData = [['' for k in range(LINES)] for j in range(2)]
-
-sock = socket.socket(socket.AF_INET, # Internet
-    socket.SOCK_DGRAM) # UDP
-
-sleep = time.sleep
-
-## display_on_line("#hashtag", 0)
-
 def displayImage(path, row = 0):
     size = (LEDSONLINE, LINES)
     im = Image.open(path).convert("L")
@@ -253,6 +218,89 @@ def displayImage(path, row = 0):
     gen_disp_data()
     transmit()
 
+def get_incomming():
+    global messageBuffer
+    while True:
+        try:
+            data, addr = incomming.recvfrom(1024, socket.MSG_DONTWAIT)
+            data = data.strip()
+            try:
+                priority = int(data[0])
+            except ValueError:
+                print("received bad package: {}".format(data))
+                continue
+            message = data[1:].replace('\n', ' ')
+            messageBuffer[priority].append(message)
+            if len(messageBuffer[priority]) > 1000:
+                messageBuffer[priority] = messageBuffer[priority][len(messageBuffer[priority])-1000:1000]
+        except socket.error:
+            break
+
+def buf_empty():
+    empty = 1
+    for el in messageBuffer:
+        if el:
+            empty = 0
+    return empty
+
+
+font = {' ':['00000', '00000', '00000', '00000', '00000', '00000', '00000'],
+        '\n':['00000', '00000', '00000', '00000', '00000', '00000', '00000']}
+fontFile = open('ledFont', 'r')
+
+for line in fontFile:
+    line = line.strip()
+    line = line.split(' ')
+    font[line[0]] = line[1:][::-1]
+
+fontFile.close()
+
+## some constants
+DISP_IP = "10.23.5.143"
+DISP_PORT = 5000
+INC_IP = "127.0.0.1"
+INC_PORT = 5004
+CHARSONROW = 18
+CHARSONDISP = 36
+LEDSONLINE = 216
+LEDSONROW = LEDSONLINE/2
+BYTESONLINE = 27
+LINES = 7
+ROWS = 2
+BYTES = BYTESONLINE * LINES
+
+## global variables
+displayData = [0 for i in range(BYTES)] ## bytestream for the display
+rowData = [['' for k in range(LINES)] for j in range(2)]
+messageBuffer = [[] for i in range(10)]
+display = socket.socket(socket.AF_INET, # Internet
+          socket.SOCK_DGRAM) # UDP
+
+incomming = socket.socket(socket.AF_INET, # Internet
+            socket.SOCK_DGRAM) # UDP
+
+incomming.bind((INC_IP, INC_PORT))
+
+sleep = time.sleep
+
+## display_on_line("#hashtag", 0)
+changed = 1
+
+
+while True:
+    get_incomming()
+    if changed and buf_empty():
+        display_on_line("Tweet naar", 0, 0)
+        display_on_line("#awesome", 1, 1)
+        changed = 0;
+    for prior in range(10):
+        if messageBuffer[prior]:
+            changed = 1
+            message = messageBuffer[prior].pop()
+            print("Priority {}: {}".format(prior, message))
+            scroll_row(message, 0, 0.05)
+            break
+"""
 displayImage("fig/test5.jpg", 0)
 time.sleep(5)
 
@@ -261,15 +309,16 @@ display_all("Loremipsumdolorsitamet, consectetur adipiscing elit. Praesent non c
 
 display_on_line('ping pong ping pong ping pong ping', 0, 0)
 display_on_line('balletje', 1)
-##time.sleep(3)
-##static_text('boe!')
+time.sleep(3)
+display_on_line('boe!')
 
 time.sleep(3)
 clear_screen()
-display_on_line('schrik?')
+display_on_line('schrik?', 1)
 time.sleep(3)
 display_on_line('#hashtag', 1)
 time.sleep(5)
 blink_text('Hallo, ik ben een flikkerlichtje', 10, 0.3, 0.2)
-display_on_line('#hahstag', 1, 0)
+display_on_line('#hashtag', 1, 0)
 scroll_row('Ahoi, ik ben een heeele lange scrollende tekst, maar dan ook echt heeeel lang eh!', 0, 0.05)
+"""
