@@ -51,7 +51,7 @@ if __name__ == '__main__':
     access_token_secret = keyFile.readline().strip()
     keyFile.close()
 
-    topics = {'awesome':5, 'ledscherm':3}
+    topics = {'ledscherm':3, 'brugge':9}
     users = {'2625727854':1}
     langs = {'en', 'nl', 'fr'}
 
@@ -63,9 +63,17 @@ if __name__ == '__main__':
     for user in users:
         userArray.append(user)
 
-    UDP_IP = "127.0.0.1"
+    UDP_IP = "10.23.5.143"
     UDP_PORT = 5004
     reject = 1
+
+    print("Listening on twitter for:")
+    for topic in topics:
+        print("\t{:<20} with priority {}".format(topic, topics[topic]))
+    for user in users:
+        print("\t{:<20} with priority {}".format(user, users[user]))
+    if reject: print("filtering out RT and http")
+    print("Sending data to {} on port {}".format(UDP_IP, UDP_PORT))
 
     sock = socket.socket(socket.AF_INET, # Internet
                                  socket.SOCK_DGRAM) # UDP= StdOutListener()
