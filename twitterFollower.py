@@ -1,4 +1,5 @@
 ##import tweepy
+## import re
 import json
 import socket
 import unidecode
@@ -11,6 +12,18 @@ from tweepy import Stream
 
 
 ##api = tweepy.API(auth)
+
+def url_remover(original):
+##    print("in: {}".format(original))
+    original = original.split(" ")
+    result = ''
+##    print (original)
+    for word in original:
+        if word.find('http') == -1:
+            result += word + ' '
+##    print("out {}".format(result))
+    return result.strip()
+
 
 class StdOutListener(StreamListener):
     """ A listener handles tweets are the received from the stream.
@@ -25,6 +38,9 @@ class StdOutListener(StreamListener):
 ##        if lang not in langs:
 ##            print ("WRONG LANG: {}".format(text))
 ##            return True
+        ## remove urls
+   ##     text = re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)
+        text = url_remover(text)
         if reject and (text.find("RT") != -1 or text.find("http") != -1):
             print ("DROPED: {}".format(text))
             return True
@@ -51,7 +67,7 @@ if __name__ == '__main__':
     access_token_secret = keyFile.readline().strip()
     keyFile.close()
 
-    topics = {'ledscherm':3, 'brugge':9}
+    topics = {'ledscherm':3, 'brugge':5, 'awesome':9}
     users = {'2625727854':1}
     langs = {'en', 'nl', 'fr'}
 

@@ -256,7 +256,7 @@ for line in fontFile:
 fontFile.close()
 
 ## some constants
-DISP_IP = "10.23.5.143"
+DISP_IP = "127.0.0.1" ##"12.23.5.143"
 DISP_PORT = 5000
 INC_IP = ""
 INC_PORT = 5004

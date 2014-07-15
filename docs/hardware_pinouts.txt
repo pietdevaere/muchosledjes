@@ -1,0 +1,36 @@
+Pinouts on a display pannel:
+Pin 1 closest on the IC
+1  GND
+2  SRCK     (vertical)
+3  G'       (vertical)
+4  SERIN    (vertical)
+5  GND
+6  SERIN    (horizontal)
+7  SRCK, G' (horizontal)
+8  GND
+9  RCK
+10 GND
+11 ?
+12 ?
+
+----------------------------------------
+pinout on test utp cable:
+Gr    GND
+Gr-W  SRCK  (vertical)
+Or    G'
+Or-W  SERIN (vertical)
+Br    SERIN (horizontal)
+Br-W  SRCK  (horizontal)
+Bl    RCK
+Bl-w
+
+----------------------------------------
+pinout on raspi (BCM2835 pin numbering)
+18 RCK 
+17 SRCK (vertical)
+4  SERIN (vertical)
+
+SCLK SRCK (horizontal)
+GND  G' (horizontal)
+MOSI SERIN (horizontal)
+MISO GND
