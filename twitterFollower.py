@@ -35,9 +35,9 @@ class StdOutListener(StreamListener):
         lang = tweet['lang']
         text = tweet['text']
         text = unidecode.unidecode(text)
-##        if lang not in langs:
-##            print ("WRONG LANG: {}".format(text))
-##            return True
+        if lang not in langs:
+            print ("WRONG LANG: {}".format(text))
+            return True
         ## remove urls
    ##     text = re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)
         text = url_remover(text)
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     access_token_secret = keyFile.readline().strip()
     keyFile.close()
 
-    topics = {'ledscherm':3, 'brugge':5, 'awesome':9}
+    topics = {'ledscherm':3, 'jesus':5}
     users = {'2625727854':1}
     langs = {'en', 'nl', 'fr'}
 
