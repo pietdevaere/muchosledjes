@@ -87,12 +87,6 @@ def clear_screen():
     """Clears the display"""
     static_text('', 1)
 
-def fill_screen():
-    """ Light up the entire display """
-    rowData = [['0'*LEDSONROW for k in range(LINES)] for j in range(ROWS)]
-    gen_disp_data()
-    transmit()
-
 def split_to_lines(message):
     """Splits the messages on word base into strings that fit on a single line"""
     result = []
@@ -147,7 +141,6 @@ def gen_disp_data():
             decArray[line] += paddedData
     global displayData
     displayData = decarray_to_bytestream(bin_to_decarray(decArray))
-
     return displayData
 
 def display_all(message, sleepTime = 3, center = 1):
@@ -279,7 +272,7 @@ BYTES = BYTESONLINE * LINES
 
 ## global variables
 displayData = [0 for i in range(BYTES)] ## bytestream for the display
-rowData = [['' for k in range(LINES)] for j in range(ROWS)]
+rowData = [['' for k in range(LINES)] for j in range(2)]
 messageBuffer = [[] for i in range(10)]
 display = socket.socket(socket.AF_INET, # Internet
           socket.SOCK_DGRAM) # UDP
@@ -291,15 +284,16 @@ incomming.bind((INC_IP, INC_PORT))
 
 sleep = time.sleep
 
+
+"""
 ## display_on_line("#hashtag", 0)
 changed = 1
 
-"""
 while True:
     get_incomming()
     if changed and buf_empty():
         display_on_line("Tweet to", 0, 0)
-        display_on_line("#woesh", 1, 1)
+        display_on_line("#Muchosledjes", 1, 1)
         changed = 0;
     for prior in range(10):
         if messageBuffer[prior]:
@@ -308,10 +302,9 @@ while True:
             print("Priority {}: {}".format(prior, message))
             scroll_row(message, 0, 0.025)
             break
+"""
 
-displayImage("fig/test5.jpg", 0)
-time.sleep(5)
-
+"""
 display_all("Loremipsumdolorsitamet, consectetur adipiscing elit. Praesent non consectetur mi. Vestibulum nisl erat, pretium et augue quis, egestas laoreet odio. Phasellus lacinia magna orci, eu porttitor"
         , 2)
 
@@ -322,6 +315,7 @@ display_on_line('boe!')
 
 time.sleep(3)
 clear_screen()
+display_on_line('schrik?', 1)
 time.sleep(3)
 display_on_line('#hashtag', 1)
 time.sleep(5)
@@ -329,3 +323,8 @@ blink_text('Hallo, ik ben een flikkerlichtje', 10, 0.3, 0.2)
 display_on_line('#hashtag', 1, 0)
 scroll_row('Ahoi, ik ben een heeele lange scrollende tekst, maar dan ook echt heeeel lang eh!', 0, 0.05)
 """
+
+while True:
+    display_on_line("Michiel <3 Sisi")
+    scroll_row("Sisi </3 Michiel", 1)
+    blink_text("Ahoi ahoi, dit is een blinkfunctie", 10, 0.5)
