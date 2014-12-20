@@ -16,23 +16,23 @@
 #define SEROUT2 4
 
 void next_row(){
-    bcm2835_gpio_write(SRCK, HIGH);
-    bcm2835_delayMicroseconds(5);
     bcm2835_gpio_write(SRCK, LOW);
+    bcm2835_delayMicroseconds(5);
+    bcm2835_gpio_write(SRCK, HIGH);
 }
 
 void first_row(){
-    bcm2835_gpio_write(SEROUT2, LOW);
+    bcm2835_gpio_write(SEROUT2, HIGH);
     bcm2835_delayMicroseconds(5);
     next_row();
-    bcm2835_gpio_write(SEROUT2, HIGH);
+    bcm2835_gpio_write(SEROUT2, LOW);
 }
 
 
 void show_data(){
-    bcm2835_gpio_write(RCK, HIGH);
-    bcm2835_delayMicroseconds(5);
     bcm2835_gpio_write(RCK, LOW);
+    bcm2835_delayMicroseconds(5);
+    bcm2835_gpio_write(RCK, HIGH);
 }
 
 int main(int argc, char **argv){
@@ -62,17 +62,17 @@ int main(int argc, char **argv){
     bcm2835_gpio_fsel(SEROUT2, BCM2835_GPIO_FSEL_OUTP);
 
     // set then to their idle values
-    bcm2835_gpio_write(RCK, LOW);
-    bcm2835_gpio_write(SRCK, LOW);
-    bcm2835_gpio_write(SEROUT2, HIGH);
+    bcm2835_gpio_write(RCK, HIGH);
+    bcm2835_gpio_write(SRCK, HIGH);
+    bcm2835_gpio_write(SEROUT2, LOW);
 
     // start up the spi
     bcm2835_spi_begin();
     bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);
-    bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
+    bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);
     bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
     bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
-    bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);
+    bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, HIGH);
    
 
     printf("Screen activating.\n");
