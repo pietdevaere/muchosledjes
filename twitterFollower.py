@@ -67,7 +67,7 @@ if __name__ == '__main__':
     access_token_secret = keyFile.readline().strip()
     keyFile.close()
 
-    topics = {'ledscherm':3, 'brugge':5, 'awesome':9}
+    topics = {'muchosledjes':3, 'woesh':5}
     users = {'2625727854':1}
     langs = {'en', 'nl', 'fr'}
 

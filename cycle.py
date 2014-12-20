@@ -284,6 +284,8 @@ incomming.bind((INC_IP, INC_PORT))
 
 sleep = time.sleep
 
+
+"""
 ## display_on_line("#hashtag", 0)
 changed = 1
 
@@ -291,7 +293,7 @@ while True:
     get_incomming()
     if changed and buf_empty():
         display_on_line("Tweet to", 0, 0)
-        display_on_line("#woesh", 1, 1)
+        display_on_line("#Muchosledjes", 1, 1)
         changed = 0;
     for prior in range(10):
         if messageBuffer[prior]:
@@ -301,9 +303,8 @@ while True:
             scroll_row(message, 0, 0.025)
             break
 """
-displayImage("fig/test5.jpg", 0)
-time.sleep(5)
 
+"""
 display_all("Loremipsumdolorsitamet, consectetur adipiscing elit. Praesent non consectetur mi. Vestibulum nisl erat, pretium et augue quis, egestas laoreet odio. Phasellus lacinia magna orci, eu porttitor"
         , 2)
 
@@ -322,3 +323,8 @@ blink_text('Hallo, ik ben een flikkerlichtje', 10, 0.3, 0.2)
 display_on_line('#hashtag', 1, 0)
 scroll_row('Ahoi, ik ben een heeele lange scrollende tekst, maar dan ook echt heeeel lang eh!', 0, 0.05)
 """
+
+while True:
+    display_on_line("Michiel <3 Sisi")
+    scroll_row("Sisi </3 Michiel", 1)
+    blink_text("Ahoi ahoi, dit is een blinkfunctie", 10, 0.5)

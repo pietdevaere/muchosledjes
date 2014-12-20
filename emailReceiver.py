@@ -5,7 +5,7 @@ import socket
 from unidecode import unidecode
 import time
 
-secret = "secreten"
+secret = "bloemkool"
 
 
 UDP_IP = "127.0.0.1"
