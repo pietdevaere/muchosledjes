@@ -316,4 +316,4 @@ if __name__ == '__main__':
     StaticRow(d, f, '--Fien en Jesse--').show(1)
     effect = ScrollText(d, f, 'De kat krabt de krollen van de trap', sleeptime = 0.05)
     effect.show(visual = True)
-print(d)
+    print(d)
