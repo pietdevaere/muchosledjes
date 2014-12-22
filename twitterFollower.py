@@ -2,6 +2,7 @@
 ## import re
 import json
 import socket
+import argparse
 import unidecode
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
@@ -35,11 +36,10 @@ class StdOutListener(StreamListener):
         lang = tweet['lang']
         text = tweet['text']
         text = unidecode.unidecode(text)
-        if lang not in langs:
-            print ("WRONG LANG: {}".format(text))
-            return True
+        ##if lang not in langs:
+        ##    print ("WRONG LANG: {}".format(text))
+        ##    return True
         ## remove urls
-   ##     text = re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)
         text = url_remover(text)
         if reject and (text.find("RT") != -1 or text.find("http") != -1):
             print ("DROPED: {}".format(text))
@@ -59,7 +59,27 @@ class StdOutListener(StreamListener):
         print(status)
 
 if __name__ == '__main__':
+
+    ##Parse the command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('topics',
+            help='The main keywords to listen to (priority 5)',
+            default=[], nargs='*')
+    parser.add_argument('-f', '--filler', dest='fillers',
+            help='Speccifiy filler topics with minimum priority to listen to (priority 9)',
+            default=[], nargs='*')
+    parser.add_argument('-d', '--destination', dest='ip',
+            help='IP to send the received tweets to',
+            default='127.0.0.1')
+    parser.add_argument('-p', '--port', dest='port',
+            help='port to send the recieved tweets to',
+            default=5004, type=int)
+    parser.add_argument('--nodrop', dest='reject',
+            help="Drop messages containing 'RT' or unfilterable urls",
+            default=True, action='store_false') 
+    args = parser.parse_args()
     
+    ## Read out the twitter keys
     keyFile = open('twitter', 'r')
     consumer_key = keyFile.readline().strip()
     consumer_secret = keyFile.readline().strip()
@@ -67,9 +87,17 @@ if __name__ == '__main__':
     access_token_secret = keyFile.readline().strip()
     keyFile.close()
 
-    topics = {'muchosledjes':3, 'woesh':5}
+    ## The default things to follow
+    topics = dict()
     users = {'2625727854':1}
-    langs = {'en', 'nl', 'fr'}
+    ##langs = {'en', 'nl', 'fr'}
+
+    ## Add the command line options
+    for item in args.topics:
+        topics[item] = 5
+    for item in args.fillers:
+        topics[item] = 9
+
 
     trackArray = []
     for topic in topics:
@@ -79,9 +107,9 @@ if __name__ == '__main__':
     for user in users:
         userArray.append(user)
 
-    UDP_IP = "10.23.5.143"
-    UDP_PORT = 5004
-    reject = 1
+    UDP_IP = args.ip ##"10.23.5.143"
+    UDP_PORT = args.port ## 5004
+    reject = args.reject
 
     print("Listening on twitter for:")
     for topic in topics:
