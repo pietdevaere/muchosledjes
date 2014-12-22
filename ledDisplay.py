@@ -84,7 +84,11 @@ def blink_text(message, numberOfBlinks, showTime, hideTime = None):
         time.sleep(hideTime)
 
 def clear_screen():
-    """Clears the display"""
+    """ Clear the display"""
+    global rowData
+    rowData = [['0'*LEDSONROW for k in range(LINES)] for j in range(ROWS)]
+    gen_disp_data()
+    transmit()
     static_text('', 1)
 
 def fill_screen():
@@ -241,6 +245,9 @@ def get_incomming():
     while True:
         try:
             data, addr = incomming.recvfrom(1024, socket.MSG_DONTWAIT)
+        except socket.error:
+            break
+        else:
             data = data.strip()
             try:
                 priority = int(data[0])
@@ -252,8 +259,6 @@ def get_incomming():
             messageBuffer[priority].append(message)
             if len(messageBuffer[priority]) > 1000:
                 messageBuffer[priority] = messageBuffer[priority][len(messageBuffer[priority])-1000:1000]
-        except socket.error:
-            break
 
 def buf_empty():
     empty = 1
@@ -262,6 +267,17 @@ def buf_empty():
             empty = 0
     return empty
 
+def get_wishes():
+    global wishes
+    while True:
+        try:
+            data, addr = wishes_soc.recvfrom(1024, socket.MSG_DONTWAIT)
+        except socket.error:
+            break
+        else:
+            data = data.strip()
+            data = data.split('<<<>>>')
+            wishes.append(data)
 
 font = {' ':['00000', '00000', '00000', '00000', '00000', '00000', '00000'],
         '\n':['00000', '00000', '00000', '00000', '00000', '00000', '00000']}
@@ -275,10 +291,12 @@ for line in fontFile:
 fontFile.close()
 
 ## some constants
-DISP_IP = "127.0.0.1" ##"12.23.5.143"
+DISP_IP = "10.23.5.143"
 DISP_PORT = 5000
 INC_IP = ""
 INC_PORT = 5004
+WISHES_IP = ""
+WISHES_PORT = 5005
 CHARSONROW = 18
 CHARSONDISP = 36
 LEDSONLINE = 216
@@ -292,27 +310,44 @@ BYTES = BYTESONLINE * LINES
 displayData = [0 for i in range(BYTES)] ## bytestream for the display
 rowData = [['' for k in range(LINES)] for j in range(ROWS)]
 messageBuffer = [[] for i in range(10)]
+wishes = []
 display = socket.socket(socket.AF_INET, # Internet
           socket.SOCK_DGRAM) # UDP
 
+## The usual socket
 incomming = socket.socket(socket.AF_INET, # Internet
             socket.SOCK_DGRAM) # UDP
 
 incomming.bind((INC_IP, INC_PORT))
 
+## 
+wishes_soc = socket.socket(socket.AF_INET, # Internet
+            socket.SOCK_DGRAM) # UDP
+
+wishes_soc.bind((WISHES_IP, WISHES_PORT))
 sleep = time.sleep
 
 ## display_on_line("#hashtag", 0)
 changed = 1
 
-flicker(1000, 0.05)
-
-"""
+##flicker(2, 0.5)
 while True:
+    get_wishes()
     get_incomming()
+    if len(wishes) > 0:
+        wish = wishes.pop()
+        changed = 1
+        message = wish[0]
+        try:
+            author = wish[1]
+        except IndexError:
+            pass
+        else:
+            display_on_line('--'+author+'--', 1)
+        scroll_row(message,0, 0.05)
     if changed and buf_empty():
-        display_on_line("Tweet to", 0, 0)
-        display_on_line("#woesh", 1, 1)
+        display_on_line("wensen@devae.re", 0, 0)
+        display_on_line("#EpiEnEmi", 1, 1)
         changed = 0
     for prior in range(10):
         if messageBuffer[prior]:
@@ -321,10 +356,8 @@ while True:
             print("Priority {}: {}".format(prior, message))
             scroll_row(message, 0, 0.025)
             break
-<<<<<<< HEAD
 
-=======
->>>>>>> d436a7f
+"""
 displayImage("fig/test5.jpg", 0)
 time.sleep(5)
 
