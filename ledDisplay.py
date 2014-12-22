@@ -89,9 +89,20 @@ def clear_screen():
 
 def fill_screen():
     """ Light up the entire display """
-    rowData = [['0'*LEDSONROW for k in range(LINES)] for j in range(ROWS)]
+    global rowData
+    rowData = [['1'*LEDSONROW for k in range(LINES)] for j in range(ROWS)]
     gen_disp_data()
     transmit()
+
+def flicker(numberOfFlickers = 1, showTime = 0.1, hideTime = None):
+    """Make the display flicker"""
+    if hideTime == None:
+        hideTime = showTime
+    for i in range(numberOfFlickers):
+        fill_screen()
+        time.sleep(showTime)
+        clear_screen()
+        time.sleep(hideTime)
 
 def split_to_lines(message):
     """Splits the messages on word base into strings that fit on a single line"""
@@ -157,7 +168,7 @@ def display_all(message, sleepTime = 3, center = 1):
         display_on_line(message.pop(0), row, row, center)
         if row:
             time.sleep(sleepTime)
-        row = not row
+    row = not row
     if row:
         display_on_line('', row, row)
         time.sleep(sleepTime)
@@ -294,13 +305,15 @@ sleep = time.sleep
 ## display_on_line("#hashtag", 0)
 changed = 1
 
+flicker(1000, 0.05)
+
 """
 while True:
     get_incomming()
     if changed and buf_empty():
         display_on_line("Tweet to", 0, 0)
         display_on_line("#woesh", 1, 1)
-        changed = 0;
+        changed = 0
     for prior in range(10):
         if messageBuffer[prior]:
             changed = 1
@@ -308,7 +321,10 @@ while True:
             print("Priority {}: {}".format(prior, message))
             scroll_row(message, 0, 0.025)
             break
+<<<<<<< HEAD
 
+=======
+>>>>>>> d436a7f
 displayImage("fig/test5.jpg", 0)
 time.sleep(5)
 
