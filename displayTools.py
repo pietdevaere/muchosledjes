@@ -28,6 +28,7 @@ class Display(object):
         self.bytestream = [0 for i in range(self.total_bytes)]
 
     def __repr__(self):
+        """ Print the state of the display to stdout"""
         self.pad_row_data()
         result = ''
         for row in range(self.rows):
@@ -39,6 +40,9 @@ class Display(object):
         return(result)
         
     def pad_row_data(self):
+        """make the data fit on a display:
+            if it is to long, shorten it
+            if it is to short, pad with zeros"""
         for row in range(self.rows):
             for line in range(self.lines):
                 self.row_data[row][line] = '{:0<108}'.format(
@@ -60,6 +64,7 @@ class Display(object):
                 self.bin_to_bytearray(long_line_array))
 
     def update(self):
+        """Generate the new frame and send it"""
         self.gen_bytestream()
         self.transmit()
     
@@ -91,18 +96,21 @@ class Display(object):
         return(bytearray(result))
 
     def clear(self, update = True):
+        """Make the display blank"""
         self.row_data = [['0'*self.leds_on_row for k in range(self.lines)]
                 for j in range(self.rows)]
         if update:
             self.update()
 
     def fill(self, update = True):
+        """Fill the display"""
         self.row_data = [['1'*self.leds_on_row for k in range(self.lines)]
                 for j in range(self.rows)]
         if update:
             self.update()
 
     def load_row(self, single_row_data, row = 0):
+        """Load the data for a row in to the display"""
         self.row_data[row] = single_row_data[:]
 
 
@@ -184,6 +192,7 @@ class TextEffect(Effect):
         return result
 
     def center_bin_array(self, bin_array):
+        """Center binary data on display"""
         result = []
 
         ## First strip away any spacing.
@@ -235,6 +244,7 @@ class StaticRow(TextEffect):
         self.d.update()
 
 class StaticDisplay(TextEffect):
+    """Fit as much text as possible static on display"""
     def __init__(self, display, font,  text, justify = 'center'):
         super().__init__(display, font, False, text)
         self.text_rows = self.split_to_lines()
@@ -256,6 +266,7 @@ class StaticDisplay(TextEffect):
         self.d.update()
 
 class ScrollText(TextEffect):
+    """Display scrolling text"""
     def __init__(self, display, font,  text, sleeptime = 0.1):
         super().__init__(display, font, True, text)
         self.bin_array = self.text_to_bin()
@@ -277,6 +288,7 @@ class ScrollText(TextEffect):
             time.sleep(self.sleeptime)
 
 class Flicker(Effect):
+    """Flicker the display"""
     def __init__(self, display, times = 3, show_time = 0.1, hide_time = None):
         self.d = display
         self.times = times
