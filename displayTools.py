@@ -276,12 +276,32 @@ class ScrollText(TextEffect):
                 print(self.d)
             time.sleep(self.sleeptime)
 
+class Flicker(Effect):
+    def __init__(self, display, times = 3, show_time = 0.1, hide_time = None):
+        self.d = display
+        self.times = times
+        self.show_time = show_time
+        if hide_time is None:
+            hide_time = show_time
+        self.hide_time = hide_time
+
+    def show(self, visual = False):
+        for i in range(self.times):
+            self.d.fill()
+            if visual:
+                print(self.d)
+            time.sleep(self.show_time)
+            self.d.clear()
+            if visual:
+                print(self.d)
+            time.sleep(self.hide_time)
 
 if __name__ == '__main__':
     f = Font('ledFont')
     d = Display('10.23.5.143')
 
-    StaticRow(d, f, '--Hanne--').show(1)
+    Flicker(d, 3).show(True)
+    StaticRow(d, f, '--Fien en Jesse--').show(1)
     effect = ScrollText(d, f, 'De kat krabt de krollen van de trap', sleeptime = 0.05)
     effect.show(visual = True)
 print(d)
