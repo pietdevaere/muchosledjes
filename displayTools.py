@@ -4,7 +4,7 @@ import math
 from PIL import Image
 import numpy
 
-class Display():
+class Display(object):
     """ A class that handles the communication with the display """
     chars_on_row = 18
     chars_on_disp = 36
@@ -22,10 +22,10 @@ class Display():
         self.socket = socket.socket(socket.AF_INET, # Internet
                             socket.SOCK_DGRAM) # UDP
         ## binary display data
-        row_data = [["0"*self.leds_on_row for k in range(self.lines)]
+        self.row_data = [["0"*self.leds_on_row for k in range(self.lines)]
                 for j in range(self.rows)]
         ## bytestream to be send to the diplay
-        bytestream = [0 for i in range(self.total_bytes)]
+        self.bytestream = [0 for i in range(self.total_bytes)]
 
     def __repr__(self):
         self.pad_row_data()
@@ -90,30 +90,166 @@ class Display():
             result += row[:self.bytes_on_line] # limit to display size
         return(bytearray(result))
 
-    def clear(self):
+    def clear(self, update = True):
         self.row_data = [['0'*self.leds_on_row for k in range(self.lines)]
                 for j in range(self.rows)]
-        self.update()
+        if update:
+            self.update()
 
-    def fill(self):
+    def fill(self, update = True):
         self.row_data = [['1'*self.leds_on_row for k in range(self.lines)]
                 for j in range(self.rows)]
-        self.update()
+        if update:
+            self.update()
 
-class TextEffect():
+    def load_row(self, single_row_data, row = 0):
+        self.row_data[row] = single_row_data
+
+
+class Font(object):
+    """ A class to store a font """
+    font = {' ':['00000', '00000', '00000', '00000', '00000', '00000', '00000'],
+           '\n':['00000', '00000', '00000', '00000', '00000', '00000', '00000']}
+
+    def __init__(self, font_file_path):
+        font_file = open(font_file_path)
+        for line in font_file:
+            line = line.strip().split(' ')
+            self.font[line[0]] = line[1:][::-1]
+        font_file.close()
+
+    def __getitem__(self, key):
+        return self.font[key]
+
+class TextEffect(object):
     """ A class that holds an effect generator """
+    def __init__(self, display, font, dynamic, text):
+        self.text = text
+        self.d = display
+        self.f = font
+        self.dynamic = dynamic
     
 
+    def text_to_bin(self, text = None):
+        """Converts text to 7 rows of binary data, 1 represents a lit pixel"""
+        if text is None:
+            text = self.text
+        result = ['' for i in range(self.d.lines)]
+        for letter in text:
+            for i in range(self.d.lines):
+                try:
+                    result[i] += self.f[letter][i] + '0' # Add a whitespace
+                except KeyError: # Charachter not in fontset
+                    result[i] += self.f[' '][i] + '0'
+        return result
+
+    def split_to_lines(self, text = None):
+        """Splits self.text into mutliple stings that fit on one line
+            returns an array of these strings"""
+        if text is None:
+            text = self.text
+        result = []
+        words = text.split()
+        line = ''
+        line_chars = 0
+
+        while words:
+            ## if the line is not full yet, add a word
+            if line_chars + len(words[0]) < self.d.chars_on_row:
+                line_chars += len(words[0])
+                line += words.pop(0)
+                ## if it is still not full, add a whitespace
+                if line_chars < self.d.chars_on_row:
+                    line += ' '
+                    line_chars += 1
+
+            ## if the next word is to long to fit on an empty line
+            elif (len(words[0]) > self.d.chars_on_row
+                    and len(line) < self.d.chars_on_row):
+                chars_to_show = self.d.chars_on_line - lineChars
+                line += words[0][:chars_to_show]
+                words[0] = words[0][chars_to_show]
+                line_chars = self.d.chars_on_row
+
+            ## otherwise: create a new line
+            else:
+                result.append(line)
+                line = ''
+                line_chars = 0
+
+        result.append(line) # add the last line
+        return result
+
+    def center_bin_array(self, bin_array):
+        result = []
+
+        ## First strip away any spacing.
+        done = False
+        while not done:
+            front = True
+            back = True
+            if not bin_array[0]: # if there is notting left in the string
+                front = back = False
+            ## check if there are empty spaces front or back
+            for i in range(len(bin_array)):
+                if front and bin_array[i][0] == '1':
+                    front = False
+                if back and bin_array[i][-1] == '1':
+                    back = False
+
+            if front: # remove empty space from front
+                for i in range(len(bin_array)):
+                    bin_array[i] = bin_array[i][1:]
+            if back: # remove empty space from back
+                for i in range(len(bin_array)):
+                    bin_array[i] = bin_array[i][:-1]
+            else:
+                done = True
+
+        ## Now pad left and right
+        while len(bin_array[0]) + 2 < self.d.leds_on_row:
+            for i in range(len(bin_array)):
+                bin_array[i] = '0' + bin_array[i] + '0'
+        if len(bin_array[0]) < self.d.leds_on_row:
+            for i in range(len(bin_array)):
+                bin_array[i] += '0'
+
+        return bin_array
+
+class StaticRow(TextEffect):
+    """Display static text on a single row"""
+    def __init__(self, display, font, text, justify = 'center'):
+        super().__init__(display, font, False, text)
+        self.bin_array = self.text_to_bin()
+        if justify is 'center':
+            self.bin_array = self.center_bin_array(self.bin_array)
+
+    def show(self, row = 0):
+        self.d.load_row(self.bin_array, row)
+        self.d.update()
+
+class StaticDisplay(TextEffect):
+    def __init__(self, display, font,  text, justify = 'center'):
+        super().__init__(display, font, False, text)
+        self.text_rows = self.split_to_lines()
+        self.rows_to_show = min(len(self.text_rows), self.d.rows)
+        self.bin_array = []
+        for i in range(self.rows_to_show):
+            row_bin_array = self.text_to_bin(self.text_rows[i])
+            if justify is 'center':
+                row_bin_array = self.center_bin_array(row_bin_array)
+            self.bin_array.append(row_bin_array)
+
+    def show(self):
+        d.clear(update = False)
+        for i in range(self.rows_to_show):
+            self.d.load_row(self.bin_array[i], i)
+        self.d.update()
+
+
+f = Font('ledFont')
 d = Display('10.23.5.143')
-d.fill()
-time.sleep(1)
-d.clear()
-time.sleep(1)
-d.fill()
+
+static = StaticDisplay(d, f, 'De kat krabt de krollen van de trap')
+static.show()
 print(d)
-        
-    
-
-
-
-
