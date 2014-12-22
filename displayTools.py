@@ -103,7 +103,7 @@ class Display(object):
             self.update()
 
     def load_row(self, single_row_data, row = 0):
-        self.row_data[row] = single_row_data
+        self.row_data[row] = single_row_data[:]
 
 
 class Font(object):
@@ -121,7 +121,10 @@ class Font(object):
     def __getitem__(self, key):
         return self.font[key]
 
-class TextEffect(object):
+class Effect(object):
+    pass
+
+class TextEffect(Effect):
     """ A class that holds an effect generator """
     def __init__(self, display, font, dynamic, text):
         self.text = text
@@ -253,12 +256,32 @@ class StaticDisplay(TextEffect):
         self.d.update()
 
 class ScrollText(TextEffect):
-    pass
+    def __init__(self, display, font,  text, sleeptime = 0.1):
+        super().__init__(display, font, True, text)
+        self.bin_array = self.text_to_bin()
+        self.sleeptime = sleeptime
+        ## Pad the message with empty space front and back
+        for i in range(len(self.bin_array)):
+            self.bin_array[i] = self.d.leds_on_row * '0' + self.bin_array[i]
+            self.bin_array[i] += self.d.leds_on_row * '0'
+
+    def show(self, row = 0, visual = False ):
+        ## now roll through the data
+        while len(self.bin_array[0]) >= self.d.leds_on_row:
+            self.d.load_row(self.bin_array)
+            self.d.update()
+            for i in range(len(self.bin_array)):
+                self.bin_array[i] = self.bin_array[i][1:]
+            if visual:
+                print(self.d)
+            time.sleep(self.sleeptime)
 
 
-f = Font('ledFont')
-d = Display('10.23.5.143')
+if __name__ == '__main__':
+    f = Font('ledFont')
+    d = Display('10.23.5.143')
 
-static = StaticRow(d, f, 'De kat krabt de krollen van de trap')
-static.show()
+    StaticRow(d, f, '--Hanne--').show(1)
+    effect = ScrollText(d, f, 'De kat krabt de krollen van de trap', sleeptime = 0.05)
+    effect.show(visual = True)
 print(d)
