@@ -5,6 +5,7 @@ from PIL import Image
 import numpy
 
 class Display():
+    """ A class that handles the communication with the display """
     chars_on_row = 18
     chars_on_disp = 36
     leds_on_line = 216
@@ -58,7 +59,10 @@ class Display():
         self.bytestream = self.bytearray_to_bytestream(
                 self.bin_to_bytearray(long_line_array))
 
-
+    def update(self):
+        self.gen_bytestream()
+        self.transmit()
+    
     def bin_to_bytearray(self, binary):
         """converts the array of 7 rows of binary data
             to an array with seven arrays of bytes"""
@@ -89,15 +93,16 @@ class Display():
     def clear(self):
         self.row_data = [['0'*self.leds_on_row for k in range(self.lines)]
                 for j in range(self.rows)]
-        self.gen_bytestream()
-        self.transmit()
+        self.update()
 
     def fill(self):
         self.row_data = [['1'*self.leds_on_row for k in range(self.lines)]
                 for j in range(self.rows)]
-        self.gen_bytestream()
-        self.transmit()
+        self.update()
 
+class TextEffect():
+    """ A class that holds an effect generator """
+    
 
 d = Display('10.23.5.143')
 d.fill()
