@@ -8,7 +8,7 @@ class Display():
     chars_on_row = 18
     chars_on_disp = 36
     leds_on_line = 216
-    leds_on_row = leds_on_line/2
+    leds_on_row = leds_on_line//2
     bytes_on_line = 27
     lines = 7
     rows = 2
@@ -21,13 +21,21 @@ class Display():
         self.socket = socket.socket(socket.AF_INET, # Internet
                             socket.SOCK_DGRAM) # UDP
         ## binary display data
-        row_data = [['0'*self.leds_on_row for k in range(self.lines)]
+        row_data = [["0"*self.leds_on_row for k in range(self.lines)]
                 for j in range(self.rows)]
         ## bytestream to be send to the diplay
         bytestream = [0 for i in range(self.total_bytes)]
 
     def __repr__(self):
-        pass
+        self.pad_row_data()
+        result = ''
+        for row in range(self.rows):
+            for line in range(self.lines):
+                result += self.row_data[row][line] + '\n'
+            result += '\n'
+        result = result.replace('1', chr(9608))
+        result = result.replace('0', ' ')
+        return(result)
         
     def pad_row_data(self):
         for row in range(self.rows):
@@ -97,6 +105,7 @@ time.sleep(1)
 d.clear()
 time.sleep(1)
 d.fill()
+print(d)
         
     
 
