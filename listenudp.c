@@ -14,6 +14,7 @@
 #define RCK 18
 #define SRCK 17
 #define SEROUT2 4
+#define GVERT 22
 
 void next_row(){
     bcm2835_gpio_write(SRCK, HIGH);
@@ -30,9 +31,11 @@ void first_row(){
 
 
 void show_data(){
+    bcm2835_gpio_write(GVERT, HIGH);
     bcm2835_gpio_write(RCK, HIGH);
     bcm2835_delayMicroseconds(5);
     bcm2835_gpio_write(RCK, LOW);
+    bcm2835_gpio_write(GVERT, LOW);
 }
 
 int main(int argc, char **argv){
@@ -60,6 +63,7 @@ int main(int argc, char **argv){
     bcm2835_gpio_fsel(RCK, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_fsel(SRCK, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_fsel(SEROUT2, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(GVERT, BCM2835_GPIO_FSEL_OUTP);
 
     // set then to their idle values
     bcm2835_gpio_write(RCK, LOW);
