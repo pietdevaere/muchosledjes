@@ -223,9 +223,12 @@ class StaticRow(TextEffect):
         self.bin_array = self.text_to_bin()
         if justify is 'center':
             self.bin_array = self.center_bin_array(self.bin_array)
-
-    def show(self, row = 0):
+    
+    def load(self, row = 0):
         self.d.load_row(self.bin_array, row)
+    
+    def show(self, row = 0):
+        self.load(row)
         self.d.update()
 
 class StaticDisplay(TextEffect):
@@ -240,16 +243,22 @@ class StaticDisplay(TextEffect):
                 row_bin_array = self.center_bin_array(row_bin_array)
             self.bin_array.append(row_bin_array)
 
-    def show(self):
+    def load(self):
         d.clear(update = False)
         for i in range(self.rows_to_show):
             self.d.load_row(self.bin_array[i], i)
+    
+    def show(self):
+        self.load()
         self.d.update()
+
+class ScrollText(TextEffect):
+    pass
 
 
 f = Font('ledFont')
 d = Display('10.23.5.143')
 
-static = StaticDisplay(d, f, 'De kat krabt de krollen van de trap')
+static = StaticRow(d, f, 'De kat krabt de krollen van de trap')
 static.show()
 print(d)
