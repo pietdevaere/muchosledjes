@@ -1,0 +1,4 @@
+*.swp
+twitter
+log/*
+__pycache__/*
