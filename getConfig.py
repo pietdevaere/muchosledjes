@@ -10,10 +10,12 @@ import subprocess
 import sys
 import time
 import shutil
+import signal
 
 SERVER_URL = "http://kiekehoning.be/bla.py"
 LOCAL_URL = "/tmp/bla.py"
 POLLING_TIME = 60
+
 
 class File():
     def __init__(self,  url):
@@ -130,13 +132,26 @@ class Process():
         if self.process:
             self.process.kill()
 
+child_process = None
+
+def signal_handler(signum, frame):
+    print('Received following signal: ', signum)
+    
+    if signum == signal.SIGTERM:
+        print('Shutting down, goodnight!')
+        if child_process:
+            child_process.kill()
+        sys.exit()
 
 if __name__ == "__main__":
+
+    signal.signal(signal.SIGTERM, signal_handler)
 
     process_file = MonitoredFile(LocalFile(LOCAL_URL))
     process_file.add_source(HttpFile(SERVER_URL))
     process_file.add_source(LocalFile('/tmp/blo.py')) 
     process = Process(LocalFile(LOCAL_URL))
+    child_process = process
 
     try:
         while True:
