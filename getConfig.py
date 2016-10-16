@@ -12,10 +12,10 @@ import time
 import shutil
 import signal
 
-SERVER_URL = "http://kiekehoning.be/bla.py"
-LOCAL_URL = "/tmp/bla.py"
+SERVER_URL = "http://kiekehoning.be/bloblo.py"
+LOCAL_URL = "/tmp/displaytools/run.py"
 POLLING_TIME = 60
-
+MSG_PREFIX = '[config-update]: '
 
 class File():
     def __init__(self,  url):
@@ -61,7 +61,7 @@ class HttpFile(File):
         
     def get(self, destination):
         try:
-            print('--> Trying to get the file over HTTP')
+            print(MSG_PREFIX + 'Trying to get the file over HTTP')
             urllib.request.urlretrieve(self.url, destination)
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -92,8 +92,8 @@ class MonitoredFile():
                 latest_source = source
 
         if latest_source != None:
-            print('--> Found a newer version of the file!')
-            print('--> at path: ' + latest_source.get_url())
+            print(MSG_PREFIX + 'Found a newer version of the file!')
+            print(MSG_PREFIX + 'at path: ' + latest_source.get_url())
 
         return latest_source
 
@@ -120,47 +120,53 @@ class Process():
             return
 
         if self.start_time == None or self.executable.mtime() > self.start_time:
-            print('--> File changed, restarting')
-            self.kill()  # beter be safe!
+            print(MSG_PREFIX + 'File changed, restarting')
+            self.terminate()  # beter be safe!
             self.start_time = datetime.datetime.now(tz=datetime.timezone.utc)
             self.start()            
 
     def start(self):
-        self.process = subprocess.Popen(self.executable.get_url())
+        self.process = subprocess.Popen(['/usr/bin/python3', self.executable.get_url()])
 
     def kill(self):
         if self.process:
             self.process.kill()
 
-child_process = None
+    def terminate(self):
+        if self.process:
+            self.process.terminate()
+
+child_processes = []
 
 def signal_handler(signum, frame):
-    print('Received following signal: ', signum)
+    print(MSG_PREFIX + 'Received following signal: ', signum)
     
     if signum == signal.SIGTERM:
-        print('Shutting down, goodnight!')
-        if child_process:
-            child_process.kill()
+        print(MSG_PREFIX + 'Shutting down, goodnight!')
+        for child in child_processes:
+            child.terminate()
         sys.exit()
 
 if __name__ == "__main__":
 
     signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
     process_file = MonitoredFile(LocalFile(LOCAL_URL))
     process_file.add_source(HttpFile(SERVER_URL))
-    process_file.add_source(LocalFile('/tmp/blo.py')) 
+    process_file.add_source(LocalFile('/home/piet/Documents/ledscherm/displaytools/run.py')) 
     process = Process(LocalFile(LOCAL_URL))
-    child_process = process
+    child_processes.append(process)
 
     try:
         while True:
             process_file.update()
             process.run_latest()
+            #time.sleep(POLLING_TIME)
             time.sleep(1)
     except:
         raise
     finally:
-        process.kill()
+        process.terminate()
     
     sys.exit()
