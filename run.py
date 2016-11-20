@@ -111,4 +111,6 @@ if __name__ == '__main__':
     signal.signal(signal.SIGTERM, signal_handler)
     
     if PROGRAM == 'twitter':
-        twitter()
+        twitter()   
+    elif PROGRAM == 'custom':
+        custom()
