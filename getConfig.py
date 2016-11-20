@@ -158,7 +158,6 @@ if __name__ == "__main__":
 
     process_file = MonitoredFile(LocalFile(LOCAL_URL))
     process_file.add_source(HttpFile(SERVER_URL))
-    process_file.add_source(LocalFile('/home/piet/Documents/ledscherm/displaytools/run.py')) 
     process = Process(LocalFile(LOCAL_URL))
     child_processes.append(process)
 
