@@ -10,6 +10,7 @@ import sys
 
 MSG_PREFIX = '[run.py]: '
 child_processes = []
+DISPLAY_IP = "192.168.49.170"
 
 ###############################################################################
 # start of configuration section
@@ -44,7 +45,7 @@ TWITTER_TOPIC = 'boeschrik'
 def custom():
     social = PriorityReceiver()
     f = Font('ledFont')
-    d = Display('127.0.0.1', echo = False)
+    d = Display(DISPLAY_IP, echo = False)
 
     while True:
         time.sleep(1)
@@ -55,7 +56,7 @@ def custom():
 def twitter():
     social = PriorityReceiver()
     f = Font('ledFont')
-    d = Display('127.0.0.1', echo = False)
+    d = Display(DISPLAY_IP, echo = False)
     
     timestamp = datetime.datetime.now().isoformat()
     twitter_output_file = open('log/twitter_'+timestamp, 'w')
