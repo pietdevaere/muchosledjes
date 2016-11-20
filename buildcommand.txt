@@ -1,0 +1,1 @@
+gcc sendToStm.c -o sendToStm.out -l bcm2835
