@@ -11,10 +11,11 @@ import sys
 import time
 import shutil
 import signal
+import secrets
 
-SERVER_URL = "http://kiekehoning.be/bloblo.py"
-LOCAL_URL = "/tmp/displaytools/run.py"
-POLLING_TIME = 60
+SERVER_URL = secrets.CONFIG_SERVER_URL
+LOCAL_URL = secrets.CONFIG_LOCAL_URL
+POLLING_TIME = secrets.CONFIG_POLING_TIME
 MSG_PREFIX = '[config-update]: '
 
 class File():
