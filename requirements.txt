@@ -2,3 +2,5 @@ requests
 dateutil.parser (python-dateutil)
 PIL (pillow)
 numpy
+tweepy
+unidecode
