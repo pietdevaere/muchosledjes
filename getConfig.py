@@ -150,6 +150,9 @@ def signal_handler(signum, frame):
 
 if __name__ == "__main__":
 
+	
+    print(MSG_PREFIX + 'Goodmorning')
+
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
