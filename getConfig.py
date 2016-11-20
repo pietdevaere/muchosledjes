@@ -15,7 +15,7 @@ import secrets
 
 SERVER_URL = secrets.CONFIG_SERVER_URL
 LOCAL_URL = secrets.CONFIG_LOCAL_URL
-POLLING_TIME = secrets.CONFIG_POLING_TIME
+POLLING_TIME = secrets.CONFIG_POLLING_TIME
 MSG_PREFIX = '[config-update]: '
 
 class File():
