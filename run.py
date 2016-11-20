@@ -104,7 +104,10 @@ def signal_handler(signum, frame):
     if signum == signal.SIGTERM:
         print(MSG_PREFIX + 'Shutting down, goodnight!')
         for child in child_processes:
-            child.terminate()
+            try:
+                child.terminate()
+            except ProcessLookupError:
+                pass
         sys.exit()
 
 if __name__ == '__main__':

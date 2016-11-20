@@ -131,11 +131,17 @@ class Process():
 
     def kill(self):
         if self.process:
-            self.process.kill()
+            try:
+                self.process.kill()
+            except ProcessLookupError:
+                pass
 
     def terminate(self):
         if self.process:
-            self.process.terminate()
+            try:
+	            self.process.terminate()
+            except ProcessLookupError:
+                pass
 
 child_processes = []
 
