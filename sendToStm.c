@@ -12,6 +12,8 @@
 #define SERVER_PORT 5000
 #define FRAME_RDY 4
 
+char startupData[] = {224, 0, 7, 128, 0, 0, 0, 32, 0, 0, 24, 0, 0, 0, 0, 0, 16, 2, 14, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 64, 0, 0, 0, 32, 0, 0, 36, 0, 0, 0, 0, 0, 0, 2, 17, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 86, 57, 227, 150, 113, 16, 14, 32, 0, 0, 0, 0, 30, 48, 231, 1, 52, 228, 78, 56, 5, 142, 0, 0, 0, 0, 7, 153, 69, 20, 89, 33, 16, 17, 112, 0, 0, 0, 0, 17, 17, 18, 13, 77, 20, 65, 68, 6, 81, 0, 0, 0, 0, 4, 16, 69, 231, 208, 32, 240, 17, 32, 0, 0, 0, 0, 30, 17, 242, 21, 69, 244, 79, 124, 4, 31, 0, 0, 0, 0, 4, 16, 69, 4, 16, 36, 16, 17, 32, 0, 0, 0, 0, 16, 17, 2, 85, 69, 2, 145, 64, 196, 16, 0, 0, 0, 0, 4, 16, 57, 3, 144, 24, 224, 14, 32, 0, 0, 0, 0, 16, 56, 225, 142, 60, 225, 15, 56, 196, 14, 0, 0};
+
 
 int main(int argc, char **argv){
 
@@ -66,19 +68,23 @@ int main(int argc, char **argv){
     }
 
     printf("Listening on UDP port number #%d\n", ntohs(name.sin_port));
+    printf("Transmitting default message...");
+    bcm2835_spi_writenb(startupData, 189);
+    printf("\tDone.\n");
 
+    printf("Entering main loop");
     while (1){
         char displayData[189];
 
         int i, j, row;
         
         if ((bytes = recv(sock, displayData, 189, 0/*MSG_DONTWAIT*/)) > 0) {
-            bcm2835_gpio_write(FRAME_RDY, LOW);
-            for (i=0; i<189; i++){
-                bcm2835_spi_transfer(displayData[i]);
-            }
-            bcm2835_delayMicroseconds(5);
-            bcm2835_gpio_write(FRAME_RDY, HIGH);
+         //   bcm2835_gpio_write(FRAME_RDY, LOW);
+         //   for (i=0; i<189; i++){
+            bcm2835_spi_writenb(displayData, 189);
+        //    }
+        //    bcm2835_delayMicroseconds(5);
+        //    bcm2835_gpio_write(FRAME_RDY, HIGH);
         }
     }
     // cloes the spi and the io
