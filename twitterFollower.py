@@ -3,18 +3,17 @@
 ##import tweepy
 ## import re
 import json
+import time
 import socket
+import requests
 import argparse
 import unidecode
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 
-##auth = tweepy.OAuthHandler(consumer_token, consumer_secret)
-##auth.set_access_token(access_token, access_token_secret)
 
-
-##api = tweepy.API(auth)
+CONN_FAIL_WAIT_TIME = 10
 
 def url_remover(original):
 ##    print("in: {}".format(original))
@@ -123,15 +122,23 @@ if __name__ == '__main__':
     if reject: print("filtering out RT and http")
     print("Sending data to {} on port {}".format(UDP_IP, UDP_PORT))
 
+    print('a')
     sock = socket.socket(socket.AF_INET, # Internet
                                  socket.SOCK_DGRAM) # UDP= StdOutListener()
 
+    print('b')
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     
+    print('c')
     l = StdOutListener()
 
-    stream = Stream(auth, l)
-##    stream.filter(track=trackArray) #Tomorrowland
-    stream.filter(follow=userArray, track=trackArray) #Tomorrowland
-
+    print('d')
+    while True:
+        try:
+            stream = Stream(auth, l)
+            stream.filter(follow=userArray, track=trackArray) #Tomorrowland
+        except requests.exceptions.RequestException as e:
+            print(e)
+            time.sleep(CONN_FAIL_WAIT_TIME)
+    print('e')
