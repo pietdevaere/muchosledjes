@@ -10,7 +10,7 @@ import sys
 
 MSG_PREFIX = '[run.py]: '
 child_processes = []
-DISPLAY_IP = "192.168.49.170"
+DISPLAY_IP = "127.0.0.1"
 
 ###############################################################################
 # start of configuration section
